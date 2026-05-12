@@ -220,7 +220,7 @@ def run_scan(symbols: list, mode: str, progress_bar, status_text,
 # ═══════════════════════════════════════════════════════════════════════════════
 # STREAMLIT APP
 # ═══════════════════════════════════════════════════════════════════════════════
-
+.streamlit/config.toml
 st.set_page_config(
     page_title="NSE Master Scanner Pro",
     page_icon="📈",
