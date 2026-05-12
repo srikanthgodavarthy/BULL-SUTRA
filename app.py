@@ -94,8 +94,7 @@ ACTION_THRESHOLDS = dict(strong_buy=75, buy=58, watch=42)
 # ═══════════════════════════════════════════════════════════════════════════════
 # SCAN PIPELINE
 # ═══════════════════════════════════════════════════════════════════════════════
-st.write("Total symbols:", len(symbols))
-st.write(symbols[:10] if symbols else "No symbols loaded")
+
 def run_scan(symbols: list, mode: str, progress_bar, status_text,
              vix_val: float = None, min_liq_cr: float = LIQUIDITY_MIN_CR):
 
@@ -191,7 +190,8 @@ def run_scan(symbols: list, mode: str, progress_bar, status_text,
         phase = res["_detected_phase"]
         record_phase_transition(sym, phase)
         res["PhaseBonus"] = phase_transition_conf_bonus(sym)
-
+    st.write("Total symbols:", len(symbols))
+    st.write(symbols[:10] if symbols else "No symbols loaded")
     # ── FIX-2: Breadth-based gating ──────────────────────────────────────────
     breadth_pulse = compute_breadth(results)
     pct_ema50_now = breadth_pulse.get("pct_above_ema50", 100)
