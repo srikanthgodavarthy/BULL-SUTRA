@@ -32,35 +32,80 @@ def _download(ticker: str, period: str, interval: str,
               retries: int = 3) -> pd.DataFrame:
     for attempt in range(retries):
         try:
-            df = yf.download(ticker, period=period, interval=interval,
-                             auto_adjust=True, progress=False, threads=False)
+            df = yf.download(
+                ticker,
+                period=period,
+                interval=interval,
+                auto_adjust=True,
+                progress=False,
+                threads=False
+            )
+
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
-            return df.dropna(how="all")
-        except Exception:
+
+            df = df.dropna(how="all")
+
+            if df.empty:
+                print(f"[FETCH FAIL] {ticker} -> EMPTY ({period}, {interval})")
+
+            return df
+
+        except Exception as e:
+            print(f"[FETCH ERROR] {ticker} attempt {attempt+1}: {e}")
             if attempt < retries - 1:
                 time.sleep(min(0.5 * (attempt + 1), 1.0))
+
     return pd.DataFrame()
 
 
 def _clean(df: pd.DataFrame, min_bars: int) -> pd.DataFrame | None:
     if df.empty:
         return None
+
+    # ✅ Validate required columns
+    required = {"Open", "High", "Low", "Close"}
+    if not required.issubset(df.columns):
+        print(f"[CLEAN FAIL] Missing columns: {df.columns}")
+        return None
+
+    # ✅ Handle partial last candle safely
     if pd.isna(df["Close"].iloc[-1]):
         df = df.iloc[:-1]
-    df["Close"]  = df["Close"].ffill()
-    df["Volume"] = df["Volume"].fillna(0)
+
+    df["Close"] = df["Close"].ffill()
+
+    if "Volume" in df.columns:
+        df["Volume"] = df["Volume"].fillna(0)
+
     df = df.dropna(subset=["Close"])
-    return df if len(df) >= min_bars else None
+
+    # ✅ RELAX bar requirement (CRITICAL FIX)
+    if len(df) < int(min_bars * 0.6):
+        print(f"[CLEAN FAIL] Too short: {len(df)} bars (min {min_bars})")
+        return None
+
+    return df
 
 
 def _fetch_one(args: tuple) -> tuple:
     """Primary fetch (primary timeframe). Returns (sym, df | None)."""
     sym, mode, min_bars = args
-    cfg    = MODE_CFG[mode]
+    cfg = MODE_CFG[mode]
     ticker = to_nse(sym)
-    raw    = _download(ticker, cfg["period"], cfg["interval"])
-    return sym, _clean(raw, min_bars)
+
+    print(f"\n--- FETCH {ticker} [{mode}] ---")
+
+    raw = _download(ticker, cfg["period"], cfg["interval"])
+
+    df = _clean(raw, min_bars)   # ✅ use one variable consistently
+
+    if df is None:
+        print(f"[REJECT] {ticker} -> CLEAN FAILED")
+    else:
+        print(f"[SUCCESS] {ticker} -> {len(df)} bars")
+
+    return sym, df   # ✅ single return only
 
 
 def _fetch_one_with_daily(args: tuple) -> tuple:
@@ -72,7 +117,10 @@ def _fetch_one_with_daily(args: tuple) -> tuple:
     primary_sym, primary_df = _fetch_one(args)
     daily_df = None
     if mode == "Intraday" and primary_df is not None:
-        _, daily_df = _fetch_one((sym, "Swing", 50))
+        _, daily_df = _fetch_one((sym, "Swing", 30))
+
+    if daily_df is None:
+            print(f"[WARN] {sym} -> DAILY FAILED (continuing)")
     return primary_sym, primary_df, daily_df
 
 
