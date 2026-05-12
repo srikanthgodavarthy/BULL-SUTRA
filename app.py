@@ -455,25 +455,37 @@ with tab_scanner:
 
             oi_badge = ""
             if oi_data:
-                s_label, s_col = oi_sentiment(oi_data["pcr"])
-                pd_   = oi_data["max_pain"] - int(ltp_val)
-                pa    = "↑" if pd_ > 0 else ("↓" if pd_ < 0 else "=")
+                s_label, s_col = oi_sentiment(oi_data.get("pcr", 1.0))
+            
+                max_pain = oi_data.get("max_pain")
+                call_wall = oi_data.get("call_wall")
+                put_wall = oi_data.get("put_wall")
+            
+                if max_pain is not None:
+                    pd_ = max_pain - int(ltp_val)
+                    pa = "↑" if pd_ > 0 else ("↓" if pd_ < 0 else "=")
+                    pain_text = f'₹{max_pain:,} {pa}{abs(pd_):,}'
+                else:
+                    pd_ = 0
+                    pain_text = "Unavailable"
+            
                 oi_badge = (
                     f'<div style="margin-top:6px;padding:5px 8px;background:#09090f;'
                     f'border-radius:5px;border:1px solid #1e1e40;font-family:JetBrains Mono,monospace;">'
                     f'<span style="color:#6b7090;font-size:9px;">PCR </span>'
                     f'<span style="background:{s_col}22;border:1px solid {s_col}44;'
                     f'color:{s_col};padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;">'
-                    f'{oi_data["pcr"]} {s_label}</span>'
+                    f'{oi_data.get("pcr", 1.0)} {s_label}</span>'
                     f'<span style="color:#6b7090;font-size:9px;margin-left:6px;">Pain </span>'
                     f'<span style="color:#f59e0b;font-size:9px;font-weight:600;">'
-                    f'₹{oi_data["max_pain"]:,} {pa}{abs(pd_):,}</span>'
-                    f'<br><span style="color:#ef4444;font-size:9px;">C▶₹{oi_data["call_wall"]:,}  </span>'
-                    f'<span style="color:#22c55e;font-size:9px;">P▶₹{oi_data["put_wall"]:,}</span>'
+                    f'{pain_text}</span>'
+                    f'<br><span style="color:#ef4444;font-size:9px;">'
+                    f'C▶₹{call_wall if call_wall else 0:,}  </span>'
+                    f'<span style="color:#22c55e;font-size:9px;">'
+                    f'P▶₹{put_wall if put_wall else 0:,}</span>'
                     f'</div>'
                 )
-
-            st.markdown(
+              st.markdown(
                 f'<div style="background:#111120;border:1px solid #1e1e40;'
                 f'border-radius:10px;padding:14px 16px;">'
                 f'<div style="font-family:DM Sans,sans-serif;color:#6b7090;'
