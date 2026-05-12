@@ -220,12 +220,12 @@ def run_scan(symbols: list, mode: str, progress_bar, status_text,
 # ═══════════════════════════════════════════════════════════════════════════════
 # STREAMLIT APP
 # ═══════════════════════════════════════════════════════════════════════════════
-.streamlit/config.toml
+
 st.set_page_config(
-    page_title="NSE Master Scanner Pro",
-    page_icon="📈",
+    page_title="BULL SUTRA Pro",
+    page_icon="🐂",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 inject_global_css()
