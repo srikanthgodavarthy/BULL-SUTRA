@@ -500,7 +500,7 @@ with tab_scanner:
                 unsafe_allow_html=True)
 
     # ── Filter results ─────────────────────────────────────────────────────────
-    results = list(st.session_state.results)
+    results = list(st.session_state.get("results", []))
     if filter_opt == "BUY + STRONG BUY":
         results = [r for r in results if r["Action"] in ("BUY", "STRONG BUY")]
     elif filter_opt == "STRONG BUY only":
