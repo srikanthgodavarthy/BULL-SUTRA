@@ -429,165 +429,190 @@ with tab_scanner:
 
     # ── Index cards ────────────────────────────────────────────────────────────
     ic1, ic2, ic3 = st.columns(3)
+
     for (name, oi_data), col in zip(
         [("Nifty 50", oi_nifty), ("BankNifty", oi_banknifty), ("Sensex", None)],
         [ic1, ic2, ic3],
     ):
+
         d = indices.get(name)
+
         with col:
+
             if not d:
                 st.markdown(
-                    f'<div style="color:#6b7090;font-size:12px;">{name}: unavailable</div>',
-                    unsafe_allow_html=True)
+                    f'<div style="color:#6b7090;font-size:12px;">'
+                    f'{name}: unavailable</div>',
+                    unsafe_allow_html=True
+                )
                 continue
 
-            chg_val = d["chg"]; pct_val = d["pct"]; ltp_val = d["value"]
-            cs  = f"+{pct_val:.2f}%" if chg_val >= 0 else f"{pct_val:.2f}%"
-            cc  = "#22c55e" if chg_val >= 0 else "#ef4444"
-            ar  = "▲" if chg_val >= 0 else "▼"
+            chg_val = d["chg"]
+            pct_val = d["pct"]
+            ltp_val = d["value"]
+
+            cs = f"+{pct_val:.2f}%" if chg_val >= 0 else f"{pct_val:.2f}%"
+            cc = "#22c55e" if chg_val >= 0 else "#ef4444"
+            ar = "▲" if chg_val >= 0 else "▼"
+
             act = d["action"]
+
             score_bar_color = (
                 "#f59e0b" if act == "STRONG BUY" else
                 "#22c55e" if act == "BUY" else
-                "#f59e0b" if act == "WATCH" else "#6b7090"
+                "#f59e0b" if act == "WATCH" else
+                "#6b7090"
             )
+
             sp = int(min(d["score"], 100))
 
+            # ── OI Badge ───────────────────────────────────────────────────────
             oi_badge = ""
+
             if oi_data:
-                s_label, s_col = oi_sentiment(oi_data.get("pcr", 1.0))
-            
+
+                s_label, s_col = oi_sentiment(
+                    oi_data.get("pcr", 1.0)
+                )
+
                 max_pain = oi_data.get("max_pain")
                 call_wall = oi_data.get("call_wall")
                 put_wall = oi_data.get("put_wall")
-            
+
                 if max_pain is not None:
                     pd_ = max_pain - int(ltp_val)
-                    pa = "↑" if pd_ > 0 else ("↓" if pd_ < 0 else "=")
-                    pain_text = f'₹{max_pain:,} {pa}{abs(pd_):,}'
+
+                    pa = (
+                        "↑" if pd_ > 0 else
+                        ("↓" if pd_ < 0 else "=")
+                    )
+
+                    pain_text = (
+                        f'₹{max_pain:,} {pa}{abs(pd_):,}'
+                    )
+
                 else:
                     pd_ = 0
-                    pain_text = "Unavailable"
-            
+                    pain_text = "OI Offline"
+
                 oi_badge = (
-                        f'<div style="margin-top:6px;padding:5px 8px;background:#09090f;'
-                        f'border-radius:5px;border:1px solid #1e1e40;font-family:JetBrains Mono,monospace;">'
-                        f'<span style="color:#6b7090;font-size:9px;">PCR </span>'
-                        f'<span style="background:{s_col}22;border:1px solid {s_col}44;'
-                        f'color:{s_col};padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;">'
-                        f'{oi_data.get("pcr", 1.0)} {s_label}</span>'
-                        f'<span style="color:#6b7090;font-size:9px;margin-left:6px;">Pain </span>'
-                        f'<span style="color:#f59e0b;font-size:9px;font-weight:600;">'
-                        f'{pain_text}</span>'
-                        f'<br><span style="color:#ef4444;font-size:9px;">'
-                        f'C▶₹{call_wall if call_wall else 0:,}  </span>'
-                        f'<span style="color:#22c55e;font-size:9px;">'
-                        f'P▶₹{put_wall if put_wall else 0:,}</span>'
-                        f'</div>'
+                    f'<div style="margin-top:6px;'
+                    f'padding:5px 8px;'
+                    f'background:#09090f;'
+                    f'border-radius:5px;'
+                    f'border:1px solid #1e1e40;'
+                    f'font-family:JetBrains Mono,monospace;">'
+
+                    f'<span style="color:#6b7090;'
+                    f'font-size:9px;">PCR </span>'
+
+                    f'<span style="background:{s_col}22;'
+                    f'border:1px solid {s_col}44;'
+                    f'color:{s_col};'
+                    f'padding:1px 5px;'
+                    f'border-radius:3px;'
+                    f'font-size:9px;'
+                    f'font-weight:600;">'
+
+                    f'{oi_data.get("pcr", 1.0)} {s_label}</span>'
+
+                    f'<span style="color:#6b7090;'
+                    f'font-size:9px;'
+                    f'margin-left:6px;">Pain </span>'
+
+                    f'<span style="color:#f59e0b;'
+                    f'font-size:9px;'
+                    f'font-weight:600;">'
+
+                    f'{pain_text}</span>'
+
+                    f'<br>'
+
+                    f'<span style="color:#ef4444;'
+                    f'font-size:9px;">'
+
+                    f'C▶₹{call_wall if call_wall is not None else 0:,}  '
+                    f'</span>'
+
+                    f'<span style="color:#22c55e;'
+                    f'font-size:9px;">'
+
+                    f'P▶₹{put_wall if put_wall is not None else 0:,}'
+                    f'</span>'
+
+                    f'</div>'
                 )
-              st.markdown(
-                f'<div style="background:#111120;border:1px solid #1e1e40;'
-                f'border-radius:10px;padding:14px 16px;">'
-                f'<div style="font-family:DM Sans,sans-serif;color:#6b7090;'
-                f'font-size:10px;text-transform:uppercase;letter-spacing:1px;">{name}</div>'
-                f'<div style="font-family:JetBrains Mono,monospace;color:#e8e8f4;'
-                f'font-size:22px;font-weight:600;margin:4px 0 2px;">{ltp_val:,.1f}</div>'
-                f'<div style="font-family:JetBrains Mono,monospace;color:{cc};font-size:12px;">'
+
+            # ── Index Card ─────────────────────────────────────────────────────
+            st.markdown(
+                f'<div style="background:#111120;'
+                f'border:1px solid #1e1e40;'
+                f'border-radius:10px;'
+                f'padding:14px 16px;">'
+
+                f'<div style="font-family:DM Sans,sans-serif;'
+                f'color:#6b7090;'
+                f'font-size:10px;'
+                f'text-transform:uppercase;'
+                f'letter-spacing:1px;">'
+
+                f'{name}</div>'
+
+                f'<div style="font-family:JetBrains Mono,monospace;'
+                f'color:#e8e8f4;'
+                f'font-size:22px;'
+                f'font-weight:600;'
+                f'margin:4px 0 2px;">'
+
+                f'{ltp_val:,.1f}</div>'
+
+                f'<div style="font-family:JetBrains Mono,monospace;'
+                f'color:{cc};'
+                f'font-size:12px;">'
+
                 f'{ar} {cs}</div>'
-                f'<div style="margin:8px 0 4px;background:#1e1e40;border-radius:3px;height:3px;">'
-                f'<div style="background:{score_bar_color};width:{sp}%;height:3px;'
-                f'border-radius:3px;transition:width 0.3s;"></div></div>'
-                f'<div style="display:flex;align-items:center;gap:6px;margin-top:4px;">'
-                f'<span style="background:{score_bar_color}22;border:1px solid {score_bar_color}44;'
-                f'color:{score_bar_color};padding:2px 7px;border-radius:3px;'
-                f'font-size:10px;font-weight:600;font-family:DM Sans,sans-serif;">{act}</span>'
-                f'<span style="font-family:JetBrains Mono,monospace;color:#3a3a60;font-size:10px;">'
+
+                f'<div style="margin:8px 0 4px;'
+                f'background:#1e1e40;'
+                f'border-radius:3px;'
+                f'height:3px;">'
+
+                f'<div style="background:{score_bar_color};'
+                f'width:{sp}%;'
+                f'height:3px;'
+                f'border-radius:3px;'
+                f'transition:width 0.3s;"></div></div>'
+
+                f'<div style="display:flex;'
+                f'align-items:center;'
+                f'gap:6px;'
+                f'margin-top:4px;">'
+
+                f'<span style="background:{score_bar_color}22;'
+                f'border:1px solid {score_bar_color}44;'
+                f'color:{score_bar_color};'
+                f'padding:2px 7px;'
+                f'border-radius:3px;'
+                f'font-size:10px;'
+                f'font-weight:600;'
+                f'font-family:DM Sans,sans-serif;">'
+
+                f'{act}</span>'
+
+                f'<span style="font-family:JetBrains Mono,monospace;'
+                f'color:#3a3a60;'
+                f'font-size:10px;">'
+
                 f'RSI {d["rsi"]} · {d["trend"]}</span>'
+
                 f'</div>'
-                + oi_badge + "</div>",
+
+                + oi_badge +
+
+                "</div>",
+
                 unsafe_allow_html=True,
             )
-
-    st.markdown('<div style="border-top:1px solid #1e1e40;margin:16px 0;"></div>',
-                unsafe_allow_html=True)
-
-    # ── Filter results ─────────────────────────────────────────────────────────
-    results = list(st.session_state.get("results", []))
-    if filter_opt == "BUY + STRONG BUY":
-        results = [r for r in results if r["Action"] in ("BUY", "STRONG BUY")]
-    elif filter_opt == "STRONG BUY only":
-        results = [r for r in results if r["Action"] == "STRONG BUY"]
-    elif filter_opt == "WATCH + BUY":
-        results = [r for r in results if r["Action"] in ("WATCH", "BUY", "STRONG BUY")]
-
-    _pf = st.session_state.get("phase_filter", "All Phases")
-    if _pf != "All Phases":
-        results = [r for r in results if r.get("Phase") == _pf]
-
-    if not st.session_state.get("show_illiquid", False):
-        results = [r for r in results if r.get("LiquidityOK", True)]
-
-    if search_q:
-        results = [r for r in results if search_q.upper() in r["Symbol"]]
-
-    # ── Ready-to-Trade cards ───────────────────────────────────────────────────
-    if st.session_state.results:
-        ACTIONABLE_PHASES = {PHASE_ENTRY, PHASE_CONT, PHASE_BRK}
-        actionable = [
-            r for r in st.session_state.results
-            if r.get("Phase") in ACTIONABLE_PHASES and r["Action"] in ("BUY", "STRONG BUY")
-        ]
-        phase_rank = {PHASE_BRK: 0, PHASE_CONT: 1, PHASE_ENTRY: 2}
-        actionable.sort(key=lambda x: (phase_rank.get(x.get("Phase"), 9), -x["Score"]))
-        top_act = actionable[:15]
-
-        scan_mode_now = st.session_state.scan_mode
-        stale_syms = {
-            e["symbol"]
-            for e in st.session_state.signal_log
-            if signal_is_stale(e["timestamp"], e.get("mode", scan_mode_now))
-        }
-
-        if top_act:
-            with st.expander(
-                f"READY TO TRADE — {len(top_act)} stocks in ENTRY / CONT / BREAKOUT",
-                expanded=True,
-            ):
-                cards = [
-                    make_card(i, r, "#22c55e55",
-                              show_entry=True, is_stale=r["Symbol"] in stale_syms)
-                    for i, r in enumerate(top_act)
-                ]
-                render_card_grid(cards)
-        else:
-            st.info("No stocks in ENTRY / CONT / BREAKOUT phase.")
-
-        watchlist = [
-            r for r in st.session_state.results
-            if r.get("Phase") in (PHASE_SETUP, PHASE_IDLE)
-            and r["Score"] >= 58
-            and r["Action"] in ("BUY", "STRONG BUY")
-        ][:10]
-        if watchlist:
-            with st.expander(
-                f"WATCHLIST — {len(watchlist)} high-score, not yet ready",
-                expanded=False,
-            ):
-                cards = [
-                    make_card(i, r, "#f59e0b55", show_entry=False,
-                              is_stale=r["Symbol"] in stale_syms)
-                    for i, r in enumerate(watchlist)
-                ]
-                render_card_grid(cards)
-
-    # ── Results table ──────────────────────────────────────────────────────────
-    if results:
-        render_results_table(results)
-        render_export_button(results, st.session_state.scan_mode)
-    elif st.session_state.results:
-        st.warning("No stocks match current filters.")
-    else:
-        st.info("Select Universe + Mode, then press SCAN.")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
