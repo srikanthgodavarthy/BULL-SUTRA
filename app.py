@@ -329,7 +329,7 @@ with tab_settings:
     with sc1:
         st.session_state.min_liq_cr = st.slider(
             "Min Liquidity (₹ Cr daily traded value)", 1.0, 50.0,
-            float(st.session_state.min_liq_cr), 1.0)
+            float(st.session_state.get("min_liq_cr", 1.0)), 1.0)
         st.session_state.phase_filter = st.selectbox(
             "Phase Filter (Scanner)",
             ["All Phases", "ENTRY", "SETUP", "CONT", "BREAKOUT", "IDLE", "EXIT"],
