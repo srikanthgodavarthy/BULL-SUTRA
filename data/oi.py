@@ -61,7 +61,19 @@ def fetch_oi_data(symbol: str = "NIFTY") -> dict | None:
         time.sleep(1.5 ** attempt)
 
     if data is None:
-        return None
+        return {
+            "symbol": symbol,
+            "expiry": None,
+            "spot": 0,
+            "pcr": 1.0,
+            "max_pain": None,
+            "call_wall": None,
+            "put_wall": None,
+            "top_ce": [],
+            "top_pe": [],
+            "df_oi": pd.DataFrame(),
+            "status": "unavailable"
+        }
 
     try:
         records       = data["records"]
@@ -108,8 +120,20 @@ def fetch_oi_data(symbol: str = "NIFTY") -> dict | None:
             "top_pe":    df_oi.nlargest(5, "PE_OI")[["Strike", "PE_OI", "PE_Chg"]].to_dict("records"),
             "df_oi":     df_oi,
         }
-    except Exception:
-        return None
+    except Exception as e:
+        return {
+            "symbol": symbol,
+            "expiry": None,
+            "spot": 0,
+            "pcr": 1.0,
+            "max_pain": None,
+            "call_wall": None,
+            "put_wall": None,
+            "top_ce": [],
+            "top_pe": [],
+            "df_oi": pd.DataFrame(),
+            "status": f"error: {str(e)}"
+        }
 
 
 def oi_sentiment(pcr: float) -> tuple[str, str]:
